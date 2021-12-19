@@ -71,4 +71,55 @@ td {
     text-align: center;
 }
 
+td.zero {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+}
 
+td.one {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #0332fe;
+}
+
+td.two {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #019f02;
+}
+
+td.three {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #ff2600;
+}
+
+td.four {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #93208f;
+}
+
+td.five {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #ff7f29;
+}
+
+td.six {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #ff3fff;
+}
+
+td.seven {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #3fffbf;
+}
+
+td.eight {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #22ee0f;
+}

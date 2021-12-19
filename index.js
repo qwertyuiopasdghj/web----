@@ -2,6 +2,7 @@ function Mine(tr, td, mineNum) {
     this.tr = tr; 
     this.td = td; 
     this.mineNum = mineNum; 
+
     this.squares = []; 
     this.tds = []; 
     this.surplusMine = mineNum; 
@@ -14,15 +15,53 @@ Mine.prototype.randomNum = function () {
     for (var i = 0; i < square.length; i++) {
         square[i] = i;
     }
-
     square.sort(function () {
         return 0.5 - Math.random()
     });
     return square.slice(0, this.mineNum);
 };
 
+Mine.prototype.init = function () {
+    // this.randomNum();
+    var rn = this.randomNum(); 
+    var n = -1; 
+    for (var i = 0; i < this.tr; i++) {
+        this.squares[i] = [];
+        for (var j = 0; j < this.td; j++) {
+          
+            n++;
+            if (rn.indexOf(n) != -1) {
+                this.squares[i][j] = {
+                    type: 'mine',
+                    x: j,
+                    y: i
+                };
 
+            } else {
+                this.squares[i][j] = {
+                    type: 'number',
+                    x: j,
+                    y: i,
+                    value: 0
+                };
+            }
+        }
+    }
 
+    this.updateNum();
+    this.createDom();
+
+    this.parent.oncontextmenu = function () {
+        return false;
+   
+    }
+
+    // 剩余雷数
+    this.mineNumDom = document.querySelector('.mineNum');
+    this.mineNumDom.innerHTML = this.surplusMine;
+};
+
+// 创建表格
 Mine.prototype.createDom = function () {
     var This = this;
     var table = document.createElement('table');
@@ -34,9 +73,10 @@ Mine.prototype.createDom = function () {
             this.tds[i][j] = domTd; 
             domTd.pos = [i, j]; 
             domTd.onmousedown = function () {
-                This.play(event, this); 
+                This.play(event, this);
             };
 
+            
 
             domTr.appendChild(domTd);
         }
@@ -58,15 +98,15 @@ Mine.prototype.getAround = function (square) {
                 j < 0 ||
                 i > this.td - 1 ||
                 j > this.tr - 1 ||
-     
+                // 上述表示出边界
                 (i == x && j == y) ||
-    
+                // 表示循环到自己
                 this.squares[j][i].type == 'mine'
-
+                
             ) {
                 continue;
             }
-   
+           
             result.push([j, i]);
         }
     }
@@ -76,7 +116,6 @@ Mine.prototype.getAround = function (square) {
 Mine.prototype.updateNum = function () {
     for (var i = 0; i < this.tr; i++) {
         for (var j = 0; j < this.td; j++) {
-            // 要更新的是雷周围的数字
             if (this.squares[i][j].type == 'number') {
                 continue;
             }
@@ -87,31 +126,43 @@ Mine.prototype.updateNum = function () {
         }
     }
 };
-
+ 
 Mine.prototype.play = function (ev, obj) {
     var This = this;
-    if (ev.which == 1 && obj.className != 'flag') { 
+    if (ev.which == 1 && obj.className != 'flag') { // 后面的条件是为了用户右键之后不能点击
+
         var curSquare = this.squares[obj.pos[0]][obj.pos[1]];
         var cl = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
-        // cl 存储className
+ 
 
         if (curSquare.type == 'number') {
-            // 用户点击的是数字
+
             obj.innerHTML = curSquare.value;
             obj.className = cl[curSquare.value];
 
             if (curSquare.value == 0) {
-        
+            
 
-                obj.innerHTML = ''; // 显示为空
+                obj.innerHTML = ''; 
                 function getAllZero(square) {
-                    var around = This.getAround(square); // 
+                    var around = This.getAround(square); 
                     for (var i = 0; i < around.length; i++) {
                         var x = around[i][0]; // 行
                         var y = around[i][1]; // 列
                         This.tds[x][y].className = cl[This.squares[x][y].value];
 
-        
+                        if (This.squares[x][y].value == 0) {
+                        
+                            if (!This.tds[x][y].check) {
+    
+                                This.tds[x][y].check = true;
+                                getAllZero(This.squares[x][y]);
+                            }
+
+                        } else {
+                         
+                            This.tds[x][y].innerHTML = This.squares[x][y].value;
+                        }
                     }
 
                 }
@@ -119,7 +170,7 @@ Mine.prototype.play = function (ev, obj) {
             }
 
         } else {
-            // 用户点击的是雷
+   
             this.gameOver(obj);
         }
     }
@@ -128,7 +179,7 @@ Mine.prototype.play = function (ev, obj) {
         if (obj.className && obj.className != 'flag') {
             return;
         }
-        obj.className = obj.className == 'flag' ? '' : 'flag';
+        obj.className = obj.className == 'flag' ? '' : 'flag'; // 切换calss 有无
 
         if (this.squares[obj.pos[0]][obj.pos[1]].type == 'mine') {
             this.allRight = true;
@@ -143,24 +194,14 @@ Mine.prototype.play = function (ev, obj) {
         }
 
         if (this.surplusMine == 0) {
-     
-            if (this.allRight == true) {
-                alert('恭喜你，游戏通过');
-                for (i = 0; i < this.tr; i++) {
-                    for (j = 0; j < this.td; j++) {
-                        this.tds[i][j].onmousedown = null;
-                    }
-                }
+            alert("游戏通关！")
 
-            } else {
-                alert('游戏失败');
-                this.gameOver();
-            }
+
         }
     }
 }
 
-// 游戏失败函数
+
 Mine.prototype.gameOver = function (clickTd) {
 
     for (i = 0; i < this.tr; i++) {
@@ -173,19 +214,21 @@ Mine.prototype.gameOver = function (clickTd) {
     }
     if (clickTd) {
         clickTd.style.backgroundColor = '#f00';
+    if("class  =mine"){
+        alert("游戏失败！")
+        return false;
+    }
     }
 }
 
-
-
-// 添加 button 的功能
 var btns = document.getElementsByTagName('button');
-var mine = null; // 用来存储生成的实例
+var mine = null; 
 var ln = 0; 
+var arr = [
     [9, 9, 10],
     [16, 16, 30],
     [20, 28, 50]
-
+]; 
 for (let i = 0; i < btns.length - 1; i++) {
     btns[i].onclick = function () {
         btns[ln].className = '';
